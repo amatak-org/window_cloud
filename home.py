@@ -1,3 +1,9 @@
+######################################################################################################################
+# Window cloud made by AMATAK.
+######################################################################################################################
+
+
+
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import sqlite3
@@ -39,7 +45,163 @@ def upload():
 def run_flask():
     app.run(host='0.0.0.0', port=5000)
 
+######################################################################################################
+class Terminal(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.terminal = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=80, height=24, bg="black", fg="white")
+        self.terminal.pack(expand=True, fill='both')
+        self.terminal.bind("<Key>", self.key_press)
 
+        self.master, self.slave = pty.openpty()
+        self.process = subprocess.Popen(
+            ["/bin/bash"],
+            stdin=self.slave,
+            stdout=self.slave,
+            stderr=self.slave,
+            universal_newlines=True
+        )
+        
+        self.terminal.after(10, self.read_output)
+
+    def key_press(self, event):
+        if event.char:
+            os.write(self.master, event.char.encode())
+        return "break"
+
+    def read_output(self):
+        max_read_bytes = 1024 * 10
+        ready, _, _ = select.select([self.master], [], [], 0.1)
+        if ready:
+            output = os.read(self.master, max_read_bytes).decode()
+            self.terminal.insert(tk.END, output)
+            self.terminal.see(tk.END)
+        self.terminal.after(10, self.read_output)
+
+class CodeEditor(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.text_widget = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=80, height=20)
+        self.text_widget.pack(expand=True, fill='both')
+        
+        self.language_var = tk.StringVar(value="python")
+        languages = ["python", "javascript", "html", "css"]
+        language_menu = ttk.OptionMenu(self, self.language_var, "python", *languages, command=self.highlight_syntax)
+        language_menu.pack()
+
+        button_frame = ttk.Frame(self)
+        button_frame.pack(fill='x')
+        ttk.Button(button_frame, text="Open", command=self.open_file).pack(side='left')
+        ttk.Button(button_frame, text="Save", command=self.save_file).pack(side='left')
+        ttk.Button(button_frame, text="Run", command=self.run_code).pack(side='left')
+
+        self.output = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=80, height=10)
+        self.output.pack(expand=True, fill='both')
+
+    def highlight_syntax(self, *args):
+        code = self.text_widget.get("1.0", tk.END)
+        lexer = get_lexer_by_name(self.language_var.get(), stripall=True)
+        formatter = get_formatter_by_name("html", style="colorful", noclasses=True)
+        highlighted = pygments.highlight(code, lexer, formatter)
+        
+        self.text_widget.delete("1.0", tk.END)
+        self.text_widget.insert(tk.END, highlighted)
+
+    def open_file(self):
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            with open(file_path, 'r') as file:
+                content = file.read()
+                self.text_widget.delete("1.0", tk.END)
+                self.text_widget.insert(tk.END, content)
+            self.highlight_syntax()
+
+    def save_file(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".py")
+        if file_path:
+            content = self.text_widget.get("1.0", tk.END)
+            with open(file_path, 'w') as file:
+                file.write(content)
+            messagebox.showinfo("Save", "File saved successfully")
+
+    def run_code(self):
+        code = self.text_widget.get("1.0", tk.END)
+        try:
+            result = subprocess.run(["python", "-c", code], capture_output=True, text=True, timeout=5)
+            self.output.delete("1.0", tk.END)
+            self.output.insert(tk.END, result.stdout)
+            if result.stderr:
+                self.output.insert(tk.END, "\nErrors:\n" + result.stderr)
+        except subprocess.TimeoutExpired:
+            self.output.delete("1.0", tk.END)
+            self.output.insert(tk.END, "Execution timed out")
+        except Exception as e:
+            self.output.delete("1.0", tk.END)
+            self.output.insert(tk.END, f"An error occurred: {str(e)}")
+  ############################ End Terminal Function
+
+##### code editor functions
+class CodeEditor(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.text_widget = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=80, height=20)
+        self.text_widget.pack(expand=True, fill='both')
+        
+        self.language_var = tk.StringVar(value="python")
+        languages = ["python", "javascript", "html", "css"]
+        language_menu = ttk.OptionMenu(self, self.language_var, "python", *languages, command=self.highlight_syntax)
+        language_menu.pack()
+
+        button_frame = ttk.Frame(self)
+        button_frame.pack(fill='x')
+        ttk.Button(button_frame, text="Open", command=self.open_file).pack(side='left')
+        ttk.Button(button_frame, text="Save", command=self.save_file).pack(side='left')
+        ttk.Button(button_frame, text="Run", command=self.run_code).pack(side='left')
+
+        self.output = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=80, height=10)
+        self.output.pack(expand=True, fill='both')
+
+    def highlight_syntax(self, *args):
+        code = self.text_widget.get("1.0", tk.END)
+        lexer = get_lexer_by_name(self.language_var.get(), stripall=True)
+        formatter = get_formatter_by_name("html", style="colorful", noclasses=True)
+        highlighted = pygments.highlight(code, lexer, formatter)
+        
+        self.text_widget.delete("1.0", tk.END)
+        self.text_widget.insert(tk.END, highlighted)
+
+    def open_file(self):
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            with open(file_path, 'r') as file:
+                content = file.read()
+                self.text_widget.delete("1.0", tk.END)
+                self.text_widget.insert(tk.END, content)
+            self.highlight_syntax()
+
+    def save_file(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".py")
+        if file_path:
+            content = self.text_widget.get("1.0", tk.END)
+            with open(file_path, 'w') as file:
+                file.write(content)
+            messagebox.showinfo("Save", "File saved successfully")
+
+    def run_code(self):
+        code = self.text_widget.get("1.0", tk.END)
+        try:
+            result = subprocess.run(["python", "-c", code], capture_output=True, text=True, timeout=5)
+            self.output.delete("1.0", tk.END)
+            self.output.insert(tk.END, result.stdout)
+            if result.stderr:
+                self.output.insert(tk.END, "\nErrors:\n" + result.stderr)
+        except subprocess.TimeoutExpired:
+            self.output.delete("1.0", tk.END)
+            self.output.insert(tk.END, "Execution timed out")
+        except Exception as e:
+            self.output.delete("1.0", tk.END)
+            self.output.insert(tk.END, f"An error occurred: {str(e)}")
+#######################################################################################################
 
 # User App
 class UserApp:
@@ -211,6 +373,66 @@ class UserApp:
         self.profile_email_label.config(text=f"Email: {self.current_user[3]}")
         
         self.load_gallery()
+      ####
+        self.profile_username_label.config(text=f"Username: {self.current_user[1]}")
+        self.profile_email_label.config(text=f"Email: {self.current_user[3]}")
+        self.load_installed_apps()
+    
+    def change_password(self):
+        new_password = self.new_password.get()
+        confirm_password = self.confirm_password.get()
+        
+        if new_password != confirm_password:
+            messagebox.showerror("Error", "Passwords do not match")
+            return
+        
+        hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
+        
+        cursor.execute("UPDATE users SET password=? WHERE id=?", (hashed_password, self.current_user[0]))
+        conn.commit()
+        messagebox.showinfo("Success", "Password changed successfully")
+        
+        self.new_password.delete(0, tk.END)
+        self.confirm_password.delete(0, tk.END)
+    
+    def install_app(self, app_name):
+        self.install_progress.delete('1.0', tk.END)
+        self.install_progress.insert(tk.END, f"Installing {app_name}...\n")
+        self.master.update()
+        
+        # Simulating installation process
+        install_script = f"""
+        echo "Updating package lists..."
+        sudo apt-get update
+        echo "Installing {app_name}..."
+        sudo apt-get install -y {app_name}
+        echo "{app_name} installation complete!"
+        """
+        
+        process = subprocess.Popen(['bash', '-c', install_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                self.install_progress.insert(tk.END, output)
+                self.install_progress.see(tk.END)
+                self.master.update()
+        
+        cursor.execute("INSERT INTO installed_apps (user_id, app_name) VALUES (?, ?)",
+                       (self.current_user[0], app_name))
+        conn.commit()
+        
+        self.install_progress.insert(tk.END, f"{app_name} has been installed and added to your installed apps list.\n")
+        self.load_installed_apps()
+    
+    def load_installed_apps(self):
+        self.installed_apps_list.delete(*self.installed_apps_list.get_children())
+        cursor.execute("SELECT app_name FROM installed_apps WHERE user_id=?", (self.current_user[0],))
+        installed_apps = cursor.fetchall()
+        for app in installed_apps:
+            self.installed_apps_list.insert('', 'end', values=(app[0],))
 
 
 ############################################################################################################
@@ -308,8 +530,46 @@ class UserApp:
 
 
 ####################################################################################################
+    def install_app(self, app_name):
+        self.install_progress.delete('1.0', tk.END)
+        self.install_progress.insert(tk.END, f"Installing {app_name}...\n")
+        self.master.update()
+        
+        # Simulating installation process
+        install_script = f"""
+        echo "Updating package lists..."
+        sudo apt-get update
+        echo "Installing {app_name}..."
+        sudo apt-get install -y {app_name}
+        echo "{app_name} installation complete!"
+        """
+        
+        process = subprocess.Popen(['bash', '-c', install_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                self.install_progress.insert(tk.END, output)
+                self.install_progress.see(tk.END)
+                self.master.update()
+        
+        cursor.execute("INSERT INTO installed_apps (user_id, app_name) VALUES (?, ?)",
+                       (self.current_user[0], app_name))
+        conn.commit()
+        
+        self.install_progress.insert(tk.END, f"{app_name} has been installed and added to your installed apps list.\n")
+        self.load_installed_apps()
+    
+    def load_installed_apps(self):
+        self.installed_apps_list.delete(*self.installed_apps_list.get_children())
+        cursor.execute("SELECT app_name FROM installed_apps WHERE user_id=?", (self.current_user[0],))
+        installed_apps = cursor.fetchall()
+        for app in installed_apps:
+            self.installed_apps_list.insert('', 'end', values=(app[0],))
 
-## Start browser server
+## Start command line server from button start in the browser. 
 def start_flask_server():
     threading.Thread(target=run_flask, daemon=True).start()
     messagebox.showinfo("Success", "Flask server started on port 5000")
