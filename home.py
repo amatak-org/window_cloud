@@ -96,7 +96,8 @@ def run_flask():
 # User App
 class UserApp:
     def __init__(self, master):
-       self.master = master
+       def __init__(self, master):
+        self.master = master
         self.master.title("User Application")
         self.master.geometry("1200x800")
         
