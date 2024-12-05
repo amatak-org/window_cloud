@@ -39,6 +39,9 @@ def upload():
 def run_flask():
     app.run(host='0.0.0.0', port=5000)
 
+
+
+# User App
 class UserApp:
     def __init__(self, master):
         self.master = master
@@ -208,7 +211,11 @@ class UserApp:
         self.profile_email_label.config(text=f"Email: {self.current_user[3]}")
         
         self.load_gallery()
-    
+
+
+############################################################################################################
+  
+    # Uplaod App
     def upload_file(self):
         file_path = filedialog.askopenfilename()
         if file_path:
@@ -299,6 +306,10 @@ class UserApp:
             self.file_content.pack(pady=10)
             self.file_image.pack_forget()
 
+
+####################################################################################################
+
+## Start browser server
 def start_flask_server():
     threading.Thread(target=run_flask, daemon=True).start()
     messagebox.showinfo("Success", "Flask server started on port 5000")
