@@ -342,43 +342,6 @@ class UserApp:
         
         self.file_image = ttk.Label(self.file_view_frame)
         self.file_image.pack(pady=10)
-
-  def setup_signup_frame(self):
-        ttk.Label(self.signup_frame, text="Username:").grid(row=0, column=0, sticky=tk.W, pady=5)
-        self.signup_username = ttk.Entry(self.signup_frame)
-        self.signup_username.grid(row=0, column=1, pady=5)
-        
-        ttk.Label(self.signup_frame, text="Password:").grid(row=1, column=0, sticky=tk.W, pady=5)
-        self.signup_password = ttk.Entry(self.signup_frame, show="*")
-        self.signup_password.grid(row=1, column=1, pady=5)
-        
-        ttk.Label(self.signup_frame, text="Email:").grid(row=2, column=0, sticky=tk.W, pady=5)
-        self.signup_email = ttk.Entry(self.signup_frame)
-        self.signup_email.grid(row=2, column=1, pady=5)
-        
-        ttk.Button(self.signup_frame, text="Sign Up", command=self.signup).grid(row=3, column=1, pady=10)
-    
-    def setup_dashboard_frame(self):
-        ttk.Label(self.dashboard_frame, text="Welcome to the Dashboard!").pack(pady=20)
-        ttk.Button(self.dashboard_frame, text="Logout", command=self.logout).pack(pady=10)
-    
-    def setup_profile_frame(self):
-        self.profile_username_label = ttk.Label(self.profile_frame, text="Username: ")
-        self.profile_username_label.pack(pady=5)
-        
-        self.profile_email_label = ttk.Label(self.profile_frame, text="Email: ")
-        self.profile_email_label.pack(pady=5)
-    
-    def setup_settings_frame(self):
-        ttk.Label(self.settings_frame, text="New Password:").grid(row=0, column=0, sticky=tk.W, pady=5)
-        self.new_password = ttk.Entry(self.settings_frame, show="*")
-        self.new_password.grid(row=0, column=1, pady=5)
-        
-        ttk.Label(self.settings_frame, text="Confirm Password:").grid(row=1, column=0, sticky=tk.W, pady=5)
-        self.confirm_password = ttk.Entry(self.settings_frame, show="*")
-        self.confirm_password.grid(row=1, column=1, pady=5)
-        
-        ttk.Button(self.settings_frame, text="Change Password", command=self.change_password).grid(row=2, column=1, pady=10)
     
     def setup_app_store_frame(self):
         self.available_apps = ["nginx", "php", "nodejs", "python", "mysql"]
