@@ -24,6 +24,32 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS uploads
                   (id INTEGER PRIMARY KEY, user_id INTEGER, filename TEXT, filepath TEXT, is_folder INTEGER)''')
 conn.commit()
 
+# Database setup
+engine = create_engine('sqlite:///users.db')
+Base = declarative_base()
+Session = sessionmaker(bind=engine)
+session = Session()
+
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
+    password = Column(String)
+    email = Column(String)
+
+class InstalledApp(Base):
+    __tablename__ = 'installed_apps'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    app_name = Column(String)
+
+Base.metadata.create_all(engine)
+###########
+
+# Alembic setup
+alembic_cfg = Config("alembic.ini")
+command.init(alembic_cfg, "alembic")
+
 @app.route('/')
 def home():
     return "Flask server is running!"
@@ -244,7 +270,7 @@ class UserApp:
         self.login_password.grid(row=1, column=1, pady=5)
         
         ttk.Button(self.login_frame, text="Login", command=self.login).grid(row=2, column=1, pady=10)
-    
+    #########
     def setup_signup_frame(self):
         ttk.Label(self.signup_frame, text="Username:").grid(row=0, column=0, sticky=tk.W, pady=5)
         self.signup_username = ttk.Entry(self.signup_frame)
@@ -316,6 +342,74 @@ class UserApp:
         
         self.file_image = ttk.Label(self.file_view_frame)
         self.file_image.pack(pady=10)
+
+  def setup_signup_frame(self):
+        ttk.Label(self.signup_frame, text="Username:").grid(row=0, column=0, sticky=tk.W, pady=5)
+        self.signup_username = ttk.Entry(self.signup_frame)
+        self.signup_username.grid(row=0, column=1, pady=5)
+        
+        ttk.Label(self.signup_frame, text="Password:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.signup_password = ttk.Entry(self.signup_frame, show="*")
+        self.signup_password.grid(row=1, column=1, pady=5)
+        
+        ttk.Label(self.signup_frame, text="Email:").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.signup_email = ttk.Entry(self.signup_frame)
+        self.signup_email.grid(row=2, column=1, pady=5)
+        
+        ttk.Button(self.signup_frame, text="Sign Up", command=self.signup).grid(row=3, column=1, pady=10)
+    
+    def setup_dashboard_frame(self):
+        ttk.Label(self.dashboard_frame, text="Welcome to the Dashboard!").pack(pady=20)
+        ttk.Button(self.dashboard_frame, text="Logout", command=self.logout).pack(pady=10)
+    
+    def setup_profile_frame(self):
+        self.profile_username_label = ttk.Label(self.profile_frame, text="Username: ")
+        self.profile_username_label.pack(pady=5)
+        
+        self.profile_email_label = ttk.Label(self.profile_frame, text="Email: ")
+        self.profile_email_label.pack(pady=5)
+    
+    def setup_settings_frame(self):
+        ttk.Label(self.settings_frame, text="New Password:").grid(row=0, column=0, sticky=tk.W, pady=5)
+        self.new_password = ttk.Entry(self.settings_frame, show="*")
+        self.new_password.grid(row=0, column=1, pady=5)
+        
+        ttk.Label(self.settings_frame, text="Confirm Password:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.confirm_password = ttk.Entry(self.settings_frame, show="*")
+        self.confirm_password.grid(row=1, column=1, pady=5)
+        
+        ttk.Button(self.settings_frame, text="Change Password", command=self.change_password).grid(row=2, column=1, pady=10)
+    
+    def setup_app_store_frame(self):
+        self.available_apps = ["nginx", "php", "nodejs", "python", "mysql"]
+        
+        for app in self.available_apps:
+            ttk.Button(self.app_store_frame, text=f"Install {app}", command=lambda a=app: self.install_app(a)).pack(pady=5)
+        
+        self.install_progress = scrolledtext.ScrolledText(self.app_store_frame, height=10, width=50)
+        self.install_progress.pack(pady=10)
+    
+    def setup_installed_apps_frame(self):
+        self.installed_apps_list = ttk.Treeview(self.installed_apps_frame, columns=('App Name',), show='headings')
+        self.installed_apps_list.heading('App Name', text='App Name')
+        self.installed_apps_list.pack(fill=tk.BOTH, expand=True)
+    
+    def setup_code_editor_frame(self):
+        self.code_editor = CodeEditor(self.code_editor_frame)
+        self.code_editor.pack(fill=tk.BOTH, expand=True)
+    
+    def setup_terminal_frame(self):
+        self.terminal = Terminal(self.terminal_frame)
+        self.terminal.pack(fill=tk.BOTH, expand=True)
+    
+    def setup_db_migration_frame(self):
+        ttk.Button(self.db_migration_frame, text="Create New Table", command=self.create_new_table).pack(pady=10)
+        ttk.Button(self.db_migration_frame, text="Make Migrations", command=self.make_migrations).pack(pady=10)
+        ttk.Button(self.db_migration_frame, text="Apply Migrations", command=self.apply_migrations).pack(pady=10)
+        
+        self.migration_output = scrolledtext.ScrolledText(self.db_migration_frame, height=10, width=50)
+        self.migration_output.pack(pady=10)
+      ###
     
     def login(self):
         username = self.login_username.get()
