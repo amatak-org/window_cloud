@@ -301,4 +301,14 @@ class UserApp:
 
 def start_flask_server():
     threading.Thread(target=run_flask, daemon=True).start()
-    messagebox.showinfo("Success", "Flask
+    messagebox.showinfo("Success", "Flask server started on port 5000")
+
+root = tk.Tk()
+user_app = UserApp(root)
+
+menu_frame = ttk.Frame(root, padding="10")
+menu_frame.pack(side=tk.BOTTOM, fill=tk.X)
+
+ttk.Button(menu_frame, text="Start Flask Server", command=start_flask_server).pack(side=tk.LEFT, padx=5)
+
+root.mainloop()
