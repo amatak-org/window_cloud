@@ -35,6 +35,8 @@ from sqlalchemy import create_engine, Column, Integer, String, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+
+
 app = Flask(__name__)
 
 # Database setup
@@ -243,6 +245,7 @@ class UserApp:
         
         self.migration_output = scrolledtext.ScrolledText(self.db_migration_frame, height=10, width=50)
         self.migration_output.pack(pady=10)
+      
       ###
     
     def login(self):
@@ -262,7 +265,11 @@ class UserApp:
             self.notebook.add(self.dashboard_frame, text="Dashboard")
             self.notebook.add(self.profile_frame, text="Profile")
             self.notebook.add(self.settings_frame, text="Settings")
-            self.notebook.add(self.gallery_frame, text="Gallery")
+            self.notebook.add(self.app_store_frame, text="App Store")
+            self.notebook.add(self.installed_apps_frame, text="Installed Apps")
+            self.notebook.add(self.code_editor_frame, text="Code Editor")
+            self.notebook.add(self.terminal_frame, text="Terminal")
+            self.notebook.add(self.db_migration_frame, text="DB Migration")
             self.notebook.select(self.dashboard_frame)
         else:
             messagebox.showerror("Login Failed", "Invalid username or password")
